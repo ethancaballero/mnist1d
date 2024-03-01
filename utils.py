@@ -6,7 +6,7 @@ import torch
 import random
 import pickle
 import matplotlib.pyplot as plt
-from .transform import transform
+from transform import transform
 
 def set_seed(seed):
     random.seed(seed)
