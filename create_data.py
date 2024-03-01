@@ -41,4 +41,4 @@ print(data['x'].dtype)
 
 #to_pickle(data, "seeds/mnist1d_data__seed_"+str(args.seed)+".pkl")
 
-to_pickle(data, flags.save_folder+"/mnist1d_data__size_"+flags.dataset_size+"__seed_"+str(args.seed)+".pkl")
+to_pickle(data, flags.save_folder+"/mnist1d_data__size_"+str(flags.dataset_size)+"__seed_"+str(args.seed)+".pkl")
