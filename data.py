@@ -4,8 +4,8 @@
 import numpy as np
 import os
 import requests
-from .transform import transform
-from .utils import from_pickle, to_pickle, ObjectView, set_seed
+from transform import transform
+from utils import from_pickle, to_pickle, ObjectView, set_seed
 
 def get_dataset_args(as_dict=False):
     arg_dict = {'num_samples': 5000,
