@@ -26,24 +26,27 @@ def get_dataset_args(as_dict=False):
 
 # basic 1D templates for the 10 digits
 def get_templates():
-    d0 = np.asarray([5,6,6.5,6.75,7,7,7,7,6.75,6.5,6,5])
-    d1 = np.asarray([5,3,3,3.4,3.8,4.2,4.6,5,5.4,5.8,5,5])
-    d2 = np.asarray([5,6,6.5,6.5,6,5.25,4.75,4,3.5,3.5,4,5])
-    d3 = np.asarray([5,6,6.5,6.5,6,5,5,6,6.5,6.5,6,5])
-    d4 = np.asarray([5,4.4,3.8,3.2,2.6,2.6,5,5,5,5,5,5])
-    d5 = np.asarray([5,3,3,3,3,5,6,6.5,6.5,6,4.5,5])
-    d6 = np.asarray([5,4,3.5,3.25,3,3,3,3,3.25,3.5,4,5])
-    d7 = np.asarray([5,7,7,6.6,6.2,5.8,5.4,5,4.6,4.2,5,5])
-    d8 = np.asarray([5,4,3.5,3.5,4,5,5,4,3.5,3.5,4,5])
-    d9 = np.asarray([5,4,3.5,3.5,4,5,5,5,5,4.7,4.3,5])
+    #_dtype = np.float64
+    _dtype = np.float32
+    #_dtype = np.float16
+    d0 = np.asarray([5,6,6.5,6.75,7,7,7,7,6.75,6.5,6,5]).astype(_dtype)
+    d1 = np.asarray([5,3,3,3.4,3.8,4.2,4.6,5,5.4,5.8,5,5]).astype(_dtype)
+    d2 = np.asarray([5,6,6.5,6.5,6,5.25,4.75,4,3.5,3.5,4,5]).astype(_dtype)
+    d3 = np.asarray([5,6,6.5,6.5,6,5,5,6,6.5,6.5,6,5]).astype(_dtype)
+    d4 = np.asarray([5,4.4,3.8,3.2,2.6,2.6,5,5,5,5,5,5]).astype(_dtype)
+    d5 = np.asarray([5,3,3,3,3,5,6,6.5,6.5,6,4.5,5]).astype(_dtype)
+    d6 = np.asarray([5,4,3.5,3.25,3,3,3,3,3.25,3.5,4,5]).astype(_dtype)
+    d7 = np.asarray([5,7,7,6.6,6.2,5.8,5.4,5,4.6,4.2,5,5]).astype(_dtype)
+    d8 = np.asarray([5,4,3.5,3.5,4,5,5,4,3.5,3.5,4,5]).astype(_dtype)
+    d9 = np.asarray([5,4,3.5,3.5,4,5,5,5,5,4.7,4.3,5]).astype(_dtype)
     
     x = np.stack([d0,d1,d2,d3,d4,d5,d6,d7,d8,d9])
     x -= x.mean(1,keepdims=True) # whiten
     x /= x.std(1,keepdims=True)
     x -= x[:,:1]  # signal starts and ends at 0
     
-    templates = {'x': x/6., 't': np.linspace(-5, 5, len(d0))/6.,
-                 'y': np.asarray([0,1,2,3,4,5,6,7,8,9])}
+    templates = {'x': x/6., 't': np.linspace(-5, 5, len(d0)).astype(_dtype)/6.,
+                 'y': np.asarray([0,1,2,3,4,5,6,7,8,9]).astype(_dtype)}
     return templates
 
 
@@ -52,6 +55,10 @@ def make_dataset(args=None, template=None, ):
     templates = get_templates() if template is None else template
     args = get_dataset_args() if args is None else args
     np.random.seed(args.seed) # reproducibility
+
+    #_dtype = np.float64
+    _dtype = np.float32
+    #_dtype = np.float16
     
     xs, ys = [], []
     samples_per_class = args.num_samples // len(templates['y'])
@@ -61,7 +68,7 @@ def make_dataset(args=None, template=None, ):
             t = templates['t']
             y = templates['y'][label_ix]
             x, new_t = transform(x, t, args) # new_t transformation is same each time
-            xs.append(x) ; ys.append(y)
+            xs.append(x.astype(_dtype)) ; ys.append(y.astype(_dtype))
     
     batch_shuffle = np.random.permutation(len(ys)) # shuffle batch dimension
     xs = np.stack(xs)[batch_shuffle]
@@ -74,11 +81,17 @@ def make_dataset(args=None, template=None, ):
     new_t = new_t/xs.std()
     xs = (xs-xs.mean())/xs.std() # center the dataset & set standard deviation to 1
 
+    _dtype = np.float16
+
+    xs = xs.astype(_dtype)
+    ys = ys.astype(_dtype)
+    new_t = new_t.astype(_dtype)
+
     # train / test split
     split_ix = int(len(ys)*args.train_split)
     dataset = {'x': xs[:split_ix], 'x_test': xs[split_ix:],
                'y': ys[:split_ix], 'y_test': ys[split_ix:],
-               't':new_t, 'templates': templates}
+               't':new_t.astype(_dtype), 'templates': templates}
     return dataset
 
 
